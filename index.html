@@ -1,15 +1,571 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <meta name="theme-color" content="#000000"/>
-    <title>Telegram Mini App</title>
-    <script type="module" crossorigin src="/tgtest123/assets/index-D8DiduKf.js"></script>
-    <link rel="stylesheet" crossorigin href="/tgtest123/assets/index-1BX8C7Nm.css">
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheAlpha.Quest</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans&display=swap');
+        body {
+            font-family: 'Pixelify Sans', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #262626;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #game {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+            width: 90vw;
+            max-width: 600px;
+            background-color: #161616;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            flex-direction: column;
+            position: relative;
+        }
+        #blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            filter: blur(5px);
+            display: none;
+            z-index: 10;
+        }
+        #title {
+            font-size: 48px;
+            color: #FE5F03;
+            margin-bottom: 20px;
+        }
+        #message {
+            font-size: 24px;
+            color: #FE7F35;
+            margin-bottom: 10px;
+        }
+        #countdown {
+            font-size: 36px;
+            color: #FE5F03;
+            margin-bottom: 10px;
+        }
+        #total-bits {
+            font-size: 16px;
+            background-color: #FFEFE6;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            color: #7F3002;
+        }
+        #total-tq {
+            font-size: 18px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            color: #FE5F03;
+            transition: transform 0.3s;
+        }
+        #total-tq.enlarge {
+            transform: scale(1.2);
+        }
+        #progress-container {
+            width: 20px;
+            height: 300px;
+            background-color: #FFDFCD;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-right: 10px;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #FE5F03;
+            height: 0;
+            transition: background-color 0.3s, height 0.3s;
+        }
+        #grid-wall {
+            display: grid;
+            grid-template-columns: repeat(10, 14px);
+            grid-gap: 1px;
+            margin-bottom: 10px;
+            width: 140px;
+            height: 140px;
+        }
+        .bit {
+            width: 14px;
+            height: 13px;
+            background-color: #FE5F03;
+        }
+        .wall-bit {
+            background-color: #7F3002;
+        }
+        #wall-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #wall {
+            width: 150px;
+            height: 150px;
+            background-size: cover;
+            cursor: pointer;
+            margin-bottom: 20px;
+            border: 2px solid #FE5F03;
+            padding: 10px;
+            transition: transform 0.1s, box-shadow 0.1s;
+            user-select: none;
+        }
+        #wall img {
+            pointer-events: none;
+        }
+        #wall:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px #FE5F03;
+        }
+        #wall:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 5px #FE5F03;
+        }
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(10, 14px);
+            grid-gap: 1px;
+            justify-content: center;
+        }
+        #energy-module {
+            width: 320px;
+            background-color: #7F3002;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #energy-container {
+            width: 300px;
+            height: 20px;
+            background-color: #FFBF9A;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+        #energy-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #7F3002;
+            transition: width 0.3s, background-color 0.3s;
+        }
+        #energy-icon {
+            position: absolute;
+            top: -15px;
+            left: -25px;
+            font-size: 24px;
+            color: #FE5F03;
+        }
+        .placeholder {
+            width: 100px;
+            height: 40px;
+            background-color: #FFEFE6;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+            display: inline-block;
+            color: #7F3002;
+            user-select: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .placeholder:hover {
+            background-color: #FE9F68;
+        }
+        .placeholder:active {
+            background-color: #CB4C02;
+            box-shadow: 0 0 5px #FE5F03;
+        }
+        .break-button {
+            background-color: #FE5F03;
+            color: #FFF4E1;
+        }
+        .power-button {
+            background-color: #763AF2;
+            color: #FFF4E1;
+        }
+        .synergy-button {
+            background-color: #3EB85F;
+            color: #FFF4E1;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+        }
+        #hearts-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .heart {
+            width: 24px;
+            height: 24px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding-top: 60px;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #262626;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .quest {
+            background-color: #161616;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .quest-name {
+            color: #FFF4E1;
+        }
+        .quest-bits {
+            color: #FFF4E1;
+        }
+        .earned-bits {
+            color: #3EB85F;
+        }
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #313130;
+            color: #FFF4E1;
+            border: 1px solid #7E3AF2;
+            margin: 0 5px;
+            border-radius: 5px;
+            user-select: none;
+        }
+        .tab.active {
+            background-color: #7E3AF2;
+            color: #FFF4E1;
+        }
+        .invite-button {
+            background-color: #3EB85F;
+            color: #FFF4E1;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .leaderboard-user {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #1E1D1D;
+            border-bottom: 1px solid #313130;
+            color: #FFF4E1;
+        }
+        .leaderboard-user:last-child {
+            border-bottom: none;
+        }
+        .search-bar {
+            margin: 10px 0;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #7E3AF2;
+            width: 80%;
+        }
+        .power-up {
+            background-color: #161616;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 10px;
+            color: #FFF4E1;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .power-up:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .power-up.selected {
+            background-color: #3EB85F;
+            color: #FFFFFF;
+        }
+        .scroll-container {
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .squad-content {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 10px;
+            background-color: #1E1D1D;
+            border-radius: 10px;
+            padding: 20px;
+            color: #FFF4E1;
+        }
+        h1 {
+            color: #FFF4E1;
+        }
+        p, .leaderboard-user, .modal-content {
+            color: #FFF4E1;
+        }
+    </style>
+</head>
+<body>
+    <div id="blur-overlay"></div>
+    <div id="login-container">
+        <script async src="https://telegram.org/js/telegram-widget.js?7" data-telegram-login="dummyte123_bot" data-size="large" data-auth-url="https://agile-atoll-76545.herokuapp.com/auth/telegram" data-request-access="write"></script>
+    </div>
+    <div id="game" class="hidden">
+        <div id="title">TheAlpha.Quest</div>
+        <div id="grid-wall"></div>
+        <div id="message"></div>
+        <div id="countdown"></div>
+        <div id="total-bits">Total Bits: 0</div>
+        <div id="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+        <div id="wall-container">
+            <div id="wall"></div>
+            <div id="grid-container"></div>
+        </div>
+        <div id="energy-module">
+            <div id="energy-container">
+                <div id="energy-bar"></div>
+            </div>
+        </div>
+        <div id="total-tq">$TQ: 0</div>
+        <div class="button-container" id="button-container" style="display: none;">
+            <div class="placeholder break-button" onclick="startGame()">BREAK!</div>
+            <div class="placeholder power-button" onclick="openModal('quest-modal')">Power</div>
+            <div class="placeholder synergy-button" onclick="openModal('synergy-modal')">Synergy</div>
+        </div>
+        <div id="hearts-container">
+            <!-- Hearts will be dynamically added here -->
+        </div>
+    </div>
+
+    <!-- Quest Modal -->
+    <div id="quest-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('quest-modal')">&times;</span>
+            <h1>Power-Ups</h1>
+            <div class="power-up" onclick="selectPowerUp('InfiniteEnergy')">
+                Infinite Energy - Energy does not run out
+            </div>
+            <div class="power-up" onclick="selectPowerUp('DoublePower')">
+                Double Power - Collect twice as many bits
+            </div>
+            <div class="power-up" onclick="selectPowerUp('QuadPower')">
+                Quad Power - Collect four times as many bits
+            </div>
+            <div class="power-up" onclick="selectPowerUp('TriplePowerUp')">
+                Triple Power Up - Infinite Energy + Double Power + Quad Power
+            </div>
+        </div>
+    </div>
+
+    <!-- Synergy Modal -->
+    <div id="synergy-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('synergy-modal')">&times;</span>
+            <div class="tab-container">
+                <div class="tab active" onclick="showTab('synergy')">Synergy</div>
+                <div class="tab" onclick="showTab('squads')">Squads</div>
+            </div>
+            <div id="synergy" class="tab-content">
+                <div id="invite-link" class="invite-button" onclick="showInviteLink()">
+                    Invite Friend
+                </div>
+                <p>Invite a friend and both of you will receive a heart. This heart will increase your bit limit for the day!</p>
+                <div class="tab-container">
+                    <div class="tab active" onclick="showLeaderboard('daily')">Daily</div>
+                    <div class="tab" onclick="showLeaderboard('all-time')">All Time</div>
+                </div>
+                <div id="daily" class="leaderboard-content">
+                    <h1>Synergy Board - Daily</h1>
+                    <div id="daily-leaderboard">
+                        <!-- Daily leaderboard content will be dynamically added here -->
+                    </div>
+                </div>
+                <div id="all-time" class="leaderboard-content" style="display:none;">
+                    <h1>Synergy Board - All Time</h1>
+                    <div id="all-time-leaderboard">
+                        <!-- All Time leaderboard content will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+            <div id="squads" class="tab-content" style="display:none;">
+                <div class="scroll-container">
+                    <div class="tab active" onclick="showSquad('alphaquesters')">AlphaQuesters</div>
+                    <div class="tab" onclick="showSquad('hamsters')">Hamsters</div>
+                    <div class="tab" onclick="showSquad('nothing')">Nothing</div>
+                    <div class="tab" onclick="showSquad('stonfi')">STONfi</div>
+                    <div class="tab" onclick="showSquad('evaa')">Evaa</div>
+                    <div class="tab" onclick="showSquad('storm')">Storm</div>
+                    <div class="tab" onclick="showSquad('xircus')">Xircus</div>
+                    <div class="tab" onclick="showSquad('dedust')">DeDust</div>
+                    <div class="tab" onclick="showSquad('resistancedogs')">Resistance Dogs</div>
+                    <div class="tab" onclick="showSquad('bemo')">Bemo</div>
+                    <div class="tab" onclick="showSquad('tonpunks')">Ton Punks</div>
+                </div>
+                <input type="text" class="search-bar" placeholder="Search squads...">
+                <div id="alphaquesters" class="squad-content">
+                    <h3>AlphaQuesters - Top 100</h3>
+                    <div id="alphaquesters-leaderboard">
+                        <!-- AlphaQuesters leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="alphaquesters-total">0</span></p>
+                </div>
+                <div id="hamsters" class="squad-content" style="display:none;">
+                    <h3>Hamsters - Top 100</h3>
+                    <div id="hamsters-leaderboard">
+                        <!-- Hamsters leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="hamsters-total">0</span></p>
+                </div>
+                <div id="nothing" class="squad-content" style="display:none;">
+                    <h3>Nothing - Top 100</h3>
+                    <div id="nothing-leaderboard">
+                        <!-- Nothing leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="nothing-total">0</span></p>
+                </div>
+                <div id="stonfi" class="squad-content" style="display:none;">
+                    <h3>STONfi - Top 100</h3>
+                    <div id="stonfi-leaderboard">
+                        <!-- STONfi leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="stonfi-total">0</span></p>
+                </div>
+                <div id="evaa" class="squad-content" style="display:none;">
+                    <h3>Evaa - Top 100</h3>
+                    <div id="evaa-leaderboard">
+                        <!-- Evaa leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="evaa-total">0</span></p>
+                </div>
+                <div id="storm" class="squad-content" style="display:none;">
+                    <h3>Storm - Top 100</h3>
+                    <div id="storm-leaderboard">
+                        <!-- Storm leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="storm-total">0</span></p>
+                </div>
+                <div id="xircus" class="squad-content" style="display:none;">
+                    <h3>Xircus - Top 100</h3>
+                    <div id="xircus-leaderboard">
+                        <!-- Xircus leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="xircus-total">0</span></p>
+                </div>
+                <div id="dedust" class="squad-content" style="display:none;">
+                    <h3>DeDust - Top 100</h3>
+                    <div id="dedust-leaderboard">
+                        <!-- DeDust leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="dedust-total">0</span></p>
+                </div>
+                <div id="resistancedogs" class="squad-content" style="display:none;">
+                    <h3>Resistance Dogs - Top 100</h3>
+                    <div id="resistancedogs-leaderboard">
+                        <!-- Resistance Dogs leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="resistancedogs-total">0</span></p>
+                </div>
+                <div id="bemo" class="squad-content" style="display:none;">
+                    <h3>Bemo - Top 100</h3>
+                    <div id="bemo-leaderboard">
+                        <!-- Bemo leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="bemo-total">0</span></p>
+                </div>
+                <div id="tonpunks" class="squad-content" style="display:none;">
+                    <h3>Ton Punks - Top 100</h3>
+                    <div id="tonpunks-leaderboard">
+                        <!-- Ton Punks leaderboard content will be dynamically added here -->
+                    </div>
+                    <p>Total Bits Collected: <span id="tonpunks-total">0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this audio element for the start sound -->
+    <audio id="start-sound" src="sounds/start-sound.mp3"></audio>
+
+    <script src="script.js"></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('id')) {
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('game').classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
 </html>
