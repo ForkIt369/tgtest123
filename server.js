@@ -10,6 +10,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const BOT_TOKEN = '6855290593:AAFHEcsjzfcNrOOD27Nth0M1QDp5nKKRJO8';
 
+// Serve a simple message on the root path
+app.get('/', (req, res) => {
+  res.send('Welcome to the Telegram Mini App Server');
+});
+
 app.get('/auth/telegram', (req, res) => {
   const { hash, ...queryParams } = req.query;
 
