@@ -1,17 +1,17 @@
 {
   "name": "telegram-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Telegram Mini App Server",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "axios": "^1.7.2",
-    "body-parser": "^1.20.2",
-    "express": "^4.19.2"
+    "body-parser": "^1.19.0",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1"
+  },
+  "engines": {
+    "node": ">=12.0.0"
   }
 }
