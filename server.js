@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -10,9 +11,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const BOT_TOKEN = '6855290593:AAFHEcsjzfcNrOOD27Nth0M1QDp5nKKRJO8';
 
-// Serve a simple message on the root path
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Handle root path
 app.get('/', (req, res) => {
-  res.send('Welcome to the Telegram Mini App Server');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/auth/telegram', (req, res) => {
